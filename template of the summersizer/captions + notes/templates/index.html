@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Caption Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        header {
+            background-color: #1a1a3d;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e55b00;
+        }
+        .note-option {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        h3 {
+            font-size: 1.2em;
+            color: #333;
+        }
+        pre {
+            font-size: 1em;
+            background-color: #e6e6e6;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+    <script>
+        function fetchCaptions(event) {
+            event.preventDefault();
+            let videoUrl = document.getElementById("video_url").value;
+
+            fetch("/get_captions", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "video_url=" + encodeURIComponent(videoUrl)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                    return;
+                }
+
+                data.captions.forEach(caption => {
+                    resultDiv.innerHTML += `<h3>Language: ${caption.language}</h3>`;
+                    resultDiv.innerHTML += `<pre>${caption.text}</pre>`;
+                });
+            });
+        }
+
+        function fetchNotes(event) {
+            event.preventDefault();
+            let videoUrl = document.getElementById("video_url").value;
+
+            // Here, you would use your backend to process and fetch notes. For now, I'm using the same placeholder.
+            fetch("/get_notes", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "video_url=" + encodeURIComponent(videoUrl)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                    return;
+                }
+
+                resultDiv.innerHTML = `<h3>Notes:</h3><pre>${data.notes}</pre>`;
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>YouTube Caption & Notes Extractor</h1>
+    </header>
+    
+    <div class="container">
+        <form onsubmit="fetchCaptions(event)">
+            <label for="video_url">Enter YouTube Video URL:</label>
+            <input type="text" id="video_url" name="video_url" required placeholder="https://www.youtube.com/watch?v=...">
+            <button type="submit">Get Captions</button>
+        </form>
+
+        <div class="note-option">
+            <h2>Or</h2>
+            <button onclick="fetchNotes(event)">Get Notes</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+</body>
+</html>

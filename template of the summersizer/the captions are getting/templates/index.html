@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Caption Extractor</title>
+    <script>
+        function fetchCaptions(event) {
+            event.preventDefault();
+            let videoUrl = document.getElementById("video_url").value;
+
+            fetch("/get_captions", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "video_url=" + encodeURIComponent(videoUrl)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                    return;
+                }
+
+                data.captions.forEach(caption => {
+                    resultDiv.innerHTML += `<h3>Language: ${caption.language}</h3>`;
+                    resultDiv.innerHTML += `<pre>${caption.text}</pre>`;
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>YouTube Caption Extractor</h1>
+    <form onsubmit="fetchCaptions(event)">
+        <label for="video_url">Enter YouTube Video URL:</label>
+        <input type="text" id="video_url" name="video_url" required>
+        <button type="submit">Get Captions</button>
+    </form>
+    <div id="result"></div>
+</body>
+</html>
